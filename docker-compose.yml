@@ -1,0 +1,42 @@
+version: "3"
+
+networks:
+  tz1:
+    driver: bridge
+
+services:
+
+  go-api:
+    build: .
+    hostname: go-api
+    restart: always
+    ports:
+      - "8083:8085"
+    networks:
+      - tz1
+    volumes:
+      - .:/app
+      - ./storage/db_config.yml:/executable/db_config.yml
+      - ./config.yml:/executable/config.yml
+      - ./.env:/executable/.env
+    env_file:
+      - .env
+    command:
+      - "/executable/worker"
+
+  postgres:
+    hostname: postgres
+    image: postgres:latest
+    volumes:
+      - ./storage/postgres-data:/var/lib/postgresql/data
+    environment:
+      - POSTGRES_USER=${POSTGRES_USER}
+      - POSTGRES_PASSWORD=${POSTGRES_PW}
+      - POSTGRES_DB=${POSTGRES_DB}
+    ports:
+      - "5435:5432"
+    restart: always
+    networks:
+      - tz1
+    env_file:
+      - .env
